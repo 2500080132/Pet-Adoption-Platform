@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pawfect Home - Rescue & Adoption Portal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ================= 1. AUTHENTICATION / LOGIN SCREEN ================= -->
+  <div id="loginScreen" class="auth-hero">
+    <div class="auth-glass-card">
+      <div class="brand-header">
+        <div class="brand-badge">🐾</div>
+        <h1>Pawfect Home</h1>
+        <p>Verified Pet Rescue & Digital Health Passport Portal</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="tabLoginBtn" class="tab-btn active" type="button" onclick="switchAuthTab('login')">Sign In</button>
+        <button id="tabRegisterBtn" class="tab-btn" type="button" onclick="switchAuthTab('register')">Register New Customer</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="input-group">
+          <label for="loginUserId">User ID</label>
+          <input type="text" id="loginUserId" placeholder="admin or customer1" required />
+        </div>
+        <div class="input-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="auth-action-btn">Enter Portal</button>
+
+        <div class="demo-logins">
+          <span>One-Click Quick Login Demo:</span>
+          <div class="demo-buttons">
+            <button type="button" class="demo-chip admin-chip" onclick="quickFill('admin', 'admin123')">🔑 Admin</button>
+            <button type="button" class="demo-chip customer-chip" onclick="quickFill('customer1', 'cust123')">🐶 Customer</button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Customer Registration Form -->
+      <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+        <div class="input-group">
+          <label for="regUserId">Unique User ID</label>
+          <input type="text" id="regUserId" placeholder="e.g. happy_adopter" required />
+        </div>
+        <div class="input-group">
+          <label for="regFullName">Full Name</label>
+          <input type="text" id="regFullName" placeholder="e.g. John Miller" required />
+        </div>
+        <div class="input-group">
+          <label for="regEmail">Email Address</label>
+          <input type="email" id="regEmail" placeholder="john@example.com" required />
+        </div>
+        <div class="input-group">
+          <label for="regPassword">Create Password</label>
+          <input type="password" id="regPassword" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="auth-action-btn register-btn">Create Customer Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 2. MAIN APPLICATION PORTAL ================= -->
+  <div id="mainWebsite" class="hidden">
+    
+    <!-- Top Navigation Header -->
+    <header class="navbar">
+      <div class="logo">🐾 Pawfect Home</div>
+      <nav class="nav-links">
+        <!-- Customer Module Links -->
+        <button class="nav-btn active" id="navDogs" type="button" onclick="switchPage('dogs')">Available Dogs</button>
+        <button class="nav-btn" id="navFavorites" type="button" onclick="switchPage('favorites')">❤️ Saved Dogs (<span id="favCount">0</span>)</button>
+        <button class="nav-btn" id="navApps" type="button" onclick="switchPage('applications')">My Applications</button>
+        <button class="nav-btn" id="navSupport" type="button" onclick="switchPage('support')">Shelter Q&A / Support</button>
+        
+        <!-- Admin Module Link -->
+        <button class="nav-btn admin-link" id="navAdmin" type="button" onclick="switchPage('admin')">⚡ Admin Dashboard</button>
+        
+        <!-- User Profile & Session Controls -->
+        <div class="user-profile-badge">
+          <span id="userGreeting"></span>
+          <button class="logout-btn" type="button" onclick="handleLogout()">Logout</button>
+        </div>
+      </nav>
+    </header>
+
+    <div class="website-banner">
+      <span id="bannerMessage">Welcome back! Check out our newest rescues ready for adoption.</span>
+    </div>
+
+    <main class="container">
+
+      <!-- PAGE 1: USER MODULE - AVAILABLE DOGS CATALOG -->
+      <section id="page-dogs" class="page-view">
+        <div class="hero-section hero-flex">
+          <div>
+            <h2>Find Your Forever Pet</h2>
+            <p>Review digital medical passports, save favorites, or schedule a shelter visit.</p>
+          </div>
+          <button class="btn quiz-btn" type="button" onclick="openQuizModal()">⚖️ Take Matchmaker Quiz</button>
+        </div>
+
+        <div class="search-bar">
+          <input 
+            type="text" 
+            id="searchFilter" 
+            placeholder="Search by dog name or breed..." 
+            oninput="filterDogs()" 
+          />
+          <select id="breedFilter" onchange="filterDogs()">
+            <option value="all">All Breeds</option>
+            <option value="Golden Retriever">Golden Retriever</option>
+            <option value="Welsh Corgi">Welsh Corgi</option>
+            <option value="Chow Chow">Chow Chow</option>
+            <option value="French Bulldog">French Bulldog</option>
+          </select>
+        </div>
+
+        <div id="dogGrid" class="dog-grid"></div>
+      </section>
+
+      <!-- PAGE 2: USER MODULE - SAVED WISHLIST -->
+      <section id="page-favorites" class="page-view hidden">
+        <div class="hero-section">
+          <h2>❤️ My Saved Wishlist</h2>
+          <p>Your shortlisted companions ready for side-by-side comparison.</p>
+        </div>
+        <div id="favoritesGrid" class="dog-grid"></div>
+      </section>
+
+      <!-- PAGE 3: USER MODULE - CUSTOMER APPLICATIONS -->
+      <section id="page-applications" class="page-view hidden">
+        <div class="hero-section">
+          <h2>My Adoption & Visit Requests</h2>
+          <p>Real-time status of your adoption applications and scheduled Meet & Greet appointments.</p>
+        </div>
+        <div id="userApplicationsList" class="table-container"></div>
+      </section>
+
+      <!-- PAGE 4: USER MODULE - SHELTER Q&A & SUPPORT -->
+      <section id="page-support" class="page-view hidden">
+        <div class="hero-section">
+          <h2>💬 Live Shelter Q&A & Support Desk</h2>
+          <p>Direct communication with our veterinary coordinators and adoption counselors.</p>
+        </div>
+
+        <div class="support-layout">
+          <!-- Submit Ticket Card -->
+          <div class="card support-card">
+            <h3>Send an Inquiry to Care Staff</h3>
+            <form onsubmit="submitSupportTicket(event)">
+              <div class="input-group">
+                <label for="supportSubject">Subject / Topic</label>
+                <input type="text" id="supportSubject" placeholder="e.g. Diet question for Buddy" required />
+              </div>
+              <div class="input-group">
+                <label for="supportMessage">Message Details</label>
+                <textarea id="supportMessage" rows="4" placeholder="Detail your question regarding diet, allergies, or shelter timing..." required></textarea>
+              </div>
+              <button type="submit" class="btn primary-btn" style="width: 100%;">Submit Inquiry</button>
+            </form>
+          </div>
+
+          <!-- FAQ Card -->
+          <div class="card support-faq">
+            <h3>Shelter Guidelines</h3>
+            <p><strong>Q: How fast do shelter managers review inquiries?</strong><br>A: Staff inspects the dashboard continuously and replies directly into your history table below.</p>
+            <hr style="margin: 12px 0; border: 0; border-top: 1px solid #e2e8f0;">
+            <p><strong>Q: Can I visit the shelter directly without an application?</strong><br>A: We recommend scheduling a Meet & Greet request first so a dedicated volunteer is assigned to you.</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 28px;">
+          <h3 style="margin-bottom: 12px;">📑 My Inquiry History & Responses</h3>
+          <div id="userInquiryList" class="table-container"></div>
+        </div>
+      </section>
+
+      <!-- PAGE 5: ADMIN MODULE - SHELTER MANAGEMENT -->
+      <section id="page-admin" class="page-view hidden">
+        <div class="hero-section">
+          <h2>⚡ Shelter Administrator Dashboard</h2>
+          <p>Publish listings, review adoption applications, and respond to incoming support inquiries.</p>
+        </div>
+
+        <div class="admin-grid">
+          <!-- Left: Add Dog Form -->
+          <div class="card">
+            <h3>Add New Dog Listing</h3>
+            <form id="addDogForm" onsubmit="handleAddDog(event)">
+              <div class="input-group">
+                <label for="dogId">Dog ID</label>
+                <input type="number" id="dogId" placeholder="e.g. 105" required />
+              </div>
+              <div class="input-group">
+                <label for="dogName">Dog Name</label>
+                <input type="text" id="dogName" placeholder="e.g. Charlie" required />
+              </div>
+              <div class="input-group">
+                <label for="dogBreed">Breed</label>
+                <input type="text" id="dogBreed" placeholder="e.g. Labrador Retriever" required />
+              </div>
+              <div class="input-group">
+                <label for="dogAge">Age</label>
+                <input type="text" id="dogAge" placeholder="e.g. 1 Year" required />
+              </div>
+              <div class="input-group">
+                <label for="dogFather">Father (Sire) Details</label>
+                <input type="text" id="dogFather" placeholder="e.g. Champion Max (Sire Line)" required />
+              </div>
+              <div class="input-group">
+                <label for="dogMother">Mother (Dam) Details</label>
+                <input type="text" id="dogMother" placeholder="e.g. Bella (Family Line)" required />
+              </div>
+              <div class="input-group">
+                <label for="dogVaccines">Vaccination Checklist (comma separated)</label>
+                <input type="text" id="dogVaccines" placeholder="Rabies: Done, DHPP: Done, Dewormed" required />
+              </div>
+              <div class="input-group">
+                <label for="dogMicrochip">Microchip ID</label>
+                <input type="text" id="dogMicrochip" placeholder="CHIP-998822" required />
+              </div>
+              <div class="input-group">
+                <label for="dogImage">Image URL</label>
+                <input type="url" id="dogImage" placeholder="https://images.unsplash.com/photo-..." required />
+              </div>
+              <button type="submit" class="btn success-btn" style="width: 100%;">Publish Listing</button>
+            </form>
+          </div>
+
+          <!-- Right: Tables -->
+          <div class="admin-tables">
+            <h3>Current Dog Directory</h3>
+            <div id="adminDogList" class="table-container" style="margin-bottom: 24px;"></div>
+
+            <h3>Customer Adoption & Visit Requests</h3>
+            <div id="adminApplicationsList" class="table-container" style="margin-bottom: 24px;"></div>
+
+            <h3>Customer Inquiries & Support Tickets</h3>
+            <div id="adminInquiriesList" class="table-container"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Adoption Details & Medical Passport Modal -->
+  <div id="dogModal" class="modal hidden" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-content">
+      <button class="close-btn" type="button" onclick="closeModal()">&times;</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Matchmaker Quiz Modal -->
+  <div id="quizModal" class="modal hidden" onclick="closeQuizOnBackdrop(event)">
+    <div class="modal-content">
+      <button class="close-btn" type="button" onclick="closeQuizModal()">&times;</button>
+      <div class="quiz-header">
+        <span style="font-size: 36px;">⚖️</span>
+        <h2>Dog Matchmaker Quiz</h2>
+        <p>Answer 3 questions to discover your best companion match!</p>
+      </div>
+
+      <form id="quizForm" onsubmit="calculateDogMatches(event)">
+        <div class="input-group">
+          <label for="quizSpace">1. What is your living space?</label>
+          <select id="quizSpace" required>
+            <option value="apartment">Apartment / Flat (No private yard)</option>
+            <option value="house">House with Fenced Yard / Open Area</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="quizActivity">2. What is your preferred activity level?</label>
+          <select id="quizActivity" required>
+            <option value="relaxed">Relaxed / Casual Strolls (Low to Medium Energy)</option>
+            <option value="active">Active Runner / Daily Outdoor Play (High Energy)</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="quizPets">3. Do you have children or other pets at home?</label>
+          <select id="quizPets" required>
+            <option value="kids">Children at home</option>
+            <option value="cats">Cats or small pets</option>
+            <option value="none">No other pets or children</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn primary-btn" style="width: 100%; margin-top: 10px;">Find My Matches</button>
+      </form>
+
+      <div id="quizResults" class="hidden" style="margin-top: 20px;">
+        <h3 style="color: #059669; text-align: center; margin-bottom: 12px;">🌟 Top Recommended Matches for You</h3>
+        <div id="matchedDogsList" class="matched-cards-container"></div>
+        <button class="btn" type="button" style="background: #e2e8f0; color: #334155; width: 100%; margin-top: 15px;" onclick="resetQuiz()">Retake Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
